@@ -26,7 +26,8 @@ python3 -m http.server 8080
 │   └── app.css                 # App-specific overrides
 ├── src/
 │   ├── app.js                  # Main bootstrap, routing, event handlers
-│   ├── store.js                # State management + localStorage persistence
+│   ├── store.js                # State management + multi-plan localStorage persistence
+│   ├── strava.js               # Strava OAuth + activity sync
 │   └── ui/
 │       ├── components.js       # Reusable UI helpers (badges, icons, formatters)
 │       └── renderers.js        # Screen renderers (create, dashboard, weekly, day, settings)
@@ -49,8 +50,10 @@ python3 -m http.server 8080
 │   ├── extract-from-excel.js   # Node script for re-extracting from workbook
 │   └── validate-against-excel.md # How to compare outputs
 ├── tests/
-│   ├── testRunner.html         # Test runner page
-│   └── engine.spec.js          # Engine unit tests
+│   ├── index.html              # Full grouped test suite (inline tests; Run/Export/Clear log)
+│   ├── testRunner.html         # Legacy test runner — loads engine.spec.js
+│   ├── engine.spec.js          # Engine unit tests used by testRunner.html
+│   └── engine_spec.js          # Orphaned older copy — not referenced by any HTML
 └── README.md
 ```
 

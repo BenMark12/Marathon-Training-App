@@ -17,7 +17,8 @@ index.html                    ← Entry point. Loads CSS + boots app.js
 │
 ├── src/                      ← UI LAYER. Renders screens, handles events.
 │   ├── app.js                ← Bootstrap, routing, event handlers (window.* functions)
-│   ├── store.js              ← State management + localStorage persistence
+│   ├── store.js              ← State management + multi-plan localStorage persistence
+│   ├── strava.js             ← Strava OAuth + activity sync (own localStorage key: marathon-strava)
 │   └── ui/
 │       ├── components.js     ← Helper functions: badges, icons, date formatting
 │       └── renderers.js      ← Screen HTML generators (one function per screen)
@@ -43,8 +44,10 @@ index.html                    ← Entry point. Loads CSS + boots app.js
 │   └── validate-against-excel.md
 │
 └── tests/
-    ├── testRunner.html
-    └── engine.spec.js
+    ├── index.html           ← Full grouped test suite (inline module script)
+    ├── testRunner.html      ← Legacy runner; loads engine.spec.js
+    ├── engine.spec.js       ← Spec loaded by testRunner.html
+    └── engine_spec.js       ← Orphaned older copy (not referenced)
 ```
 
 ---
@@ -197,9 +200,14 @@ All user-triggered functions are attached to `window.*`:
 ### 9. Change state persistence
 **Edit:** `src/store.js`.
 
-The store saves two things to localStorage:
-- `marathon-training-plan` → the full generated plan (planMeta + days + weeks)
-- `marathon-completions` → which days are marked complete (day index → timestamp)
+The store uses a **multi-plan** localStorage scheme:
+- `marathon-plans-index` → array of `{planId, ...}` entries indexing all saved plans
+- `marathon-plan::{planId}` → the full generated plan (planMeta + days + weeks) for that id
+- `marathon-comp::{planId}` → completions for that plan (day index → timestamp)
+
+Legacy keys `marathon-training-plan` and `marathon-completions` are only read by `_migrate()` on first boot to move old single-plan data into the new scheme, then deleted. Do not write to them.
+
+Strava-related state (`clientId`, `clientSecret`, `accessToken`, `refreshToken`, `athlete`) lives under `marathon-strava` and is managed by `src/strava.js`, not `store.js`.
 
 ---
 
@@ -234,16 +242,17 @@ The store saves two things to localStorage:
 
 ## File size reference
 
-| File | Purpose | Approx lines |
-|------|---------|-------------|
-| `sessionTemplates.json` | 151 workouts across 14 tables | ~2800 |
-| `paceTables.json` | 429 pace rows across 65 tables | ~4400 |
-| `config.json` | Pace lookups + summary mappings | ~650 |
-| `planGenerator.js` | Main orchestrator | ~320 |
-| `renderers.js` | All 5 screen renderers | ~400 |
-| `paceEngine.js` | Pace calculations + guidance | ~180 |
-| `weeklySchedule.js` | Day-of-week logic | ~150 |
-| Everything else | Various | ~50–100 each |
+Approximate — run `wc -l` for current numbers.
+
+| File | Purpose |
+|------|---------|
+| `sessionTemplates.json` | 151 workouts across 14 tables |
+| `paceTables.json` | 429 pace rows across 65 tables |
+| `config.json` | Pace lookups + summary mappings |
+| `planGenerator.js` | Main orchestrator |
+| `renderers.js` | All 5 screen renderers (create, dashboard, weekly, day, settings) |
+| `paceEngine.js` | Pace calculations + guidance |
+| `weeklySchedule.js` | Day-of-week logic |
 
 ---
 
@@ -252,5 +261,5 @@ The store saves two things to localStorage:
 1. **Visual changes (CSS):** Just save and check Live Server — instant reload.
 2. **UI changes (renderers):** Save, reload, click through all 5 screens.
 3. **Data changes (JSON):** Reset the plan (Settings → Reset), regenerate, check the new sessions appear.
-4. **Engine changes:** Open `tests/testRunner.html` in the browser to run unit tests. Also regenerate a plan and verify the debug panel (Settings → Debug Panel) shows sensible intermediate values.
+4. **Engine changes:** Open `tests/index.html` in the browser to run the full grouped suite, or `tests/testRunner.html` for the legacy `engine.spec.js` runner. Also regenerate a plan and verify the debug panel (Settings → Debug Panel) shows sensible intermediate values.
 5. **Quick smoke test:** Generate a plan with defaults, check dashboard loads, tap a day, mark it complete, navigate weeks, export JSON.
