@@ -2,6 +2,8 @@
 
 A browser-based marathon training plan generator that reproduces the behaviour of the Excel/VBA "Training Block Template V9" tool.
 
+> **Active migration:** a Next.js + Vercel Blob port is being scaffolded in [`/web`](./web) — see [`PRODUCTIONISATION_PLAN.md`](./PRODUCTIONISATION_PLAN.md). The vanilla-JS app below keeps working until Phase 4 replaces the UI.
+
 ## Quick Start
 
 Open `index.html` in a browser (or serve with any static server):

@@ -1,0 +1,40 @@
+@use "sass:color";
+
+.main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+
+  h1 {
+    font-size: 3rem;
+    margin: 0;
+  }
+
+  p {
+    font-size: 1.125rem;
+    max-width: 36rem;
+    color: #555;
+  }
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: #fc4c02;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+
+  &:hover {
+    background: color.adjust(#fc4c02, $lightness: -5%);
+  }
+}
