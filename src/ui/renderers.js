@@ -15,6 +15,7 @@ import {
   focusMarkerClass, getDaysToRace, getRemainingSessions, getTotalSessions
 } from './components.js';
 import store from '../store.js';
+import { isStravaConnected, getStravaAthlete, loadStravaSettings } from '../strava.js';
 
 // ===== PACE OPTIONS HELPER =====
 function generatePaceOptions(selected) {
@@ -592,6 +593,43 @@ export function renderDayDetail() {
 
 // ===== SETTINGS =====
 export function renderSettings() {
+  const connected = isStravaConnected();
+  const athlete = getStravaAthlete();
+  const stravaSettings = loadStravaSettings();
+
+  const stravaCard = `
+    <div class="card" style="margin-top:var(--sp-6)">
+      <div class="card-title">Strava</div>
+      ${connected ? `
+        <div style="font-size:var(--fs-sm);color:var(--c-text-muted);margin-bottom:var(--sp-4)">
+          Connected as <strong style="color:var(--c-text)">${athlete.firstname} ${athlete.lastname}</strong>
+        </div>
+        <div style="display:flex;gap:var(--sp-3);flex-wrap:wrap">
+          <button class="btn btn-sm btn-primary" onclick="window.stravaSync()">Sync Activities</button>
+          <button class="btn btn-sm btn-secondary" onclick="window.stravaDisconnect()">Disconnect</button>
+        </div>
+        <div id="strava-sync-status" style="margin-top:var(--sp-3);font-size:var(--fs-sm);color:var(--c-text-muted)"></div>
+      ` : `
+        <p style="font-size:var(--fs-sm);color:var(--c-text-muted);margin-bottom:var(--sp-4)">
+          Connect Strava to automatically mark sessions complete when you log a run.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:var(--sp-3);margin-bottom:var(--sp-4)">
+          <div>
+            <label style="font-size:var(--fs-sm);font-weight:var(--fw-semibold);display:block;margin-bottom:var(--sp-1)">Client ID</label>
+            <input id="strava-client-id" type="text" class="input" placeholder="From strava.com/settings/api"
+              value="${stravaSettings.clientId || ''}" style="width:100%">
+          </div>
+          <div>
+            <label style="font-size:var(--fs-sm);font-weight:var(--fw-semibold);display:block;margin-bottom:var(--sp-1)">Client Secret</label>
+            <input id="strava-client-secret" type="password" class="input" placeholder="From strava.com/settings/api"
+              value="${stravaSettings.clientSecret || ''}" style="width:100%">
+          </div>
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="window.stravaConnect()">Connect with Strava</button>
+      `}
+    </div>
+  `;
+
   return `
     <div class="screen" id="screen-settings">
       <h2 style="font-size:var(--fs-xl);margin-bottom:var(--sp-6)">Settings</h2>
@@ -600,6 +638,7 @@ export function renderSettings() {
         <input type="file" id="import-file" accept=".json" style="display:none" onchange="window.importPlan(event)"></div>
       <div class="settings-item" style="border-color:var(--c-danger)"><span style="color:var(--c-danger)">Reset Plan</span>
         <button class="btn btn-sm" style="background:var(--c-danger);color:white" onclick="window.resetPlan()">Reset</button></div>
+      ${stravaCard}
       ${store.plan?`<div class="card" style="margin-top:var(--sp-6)"><div class="card-title">Plan Info</div>
         <div style="font-size:var(--fs-sm);color:var(--c-text-muted);line-height:2">
           Race: ${store.plan.planMeta.raceDate}<br>

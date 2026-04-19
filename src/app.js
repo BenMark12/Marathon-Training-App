@@ -7,6 +7,7 @@ import store from './store.js';
 import { generateTrainingPlan } from '../engine/planGenerator.js';
 import { renderCreateScreen, renderDashboard, renderWeeklyView, renderDayDetail, renderSettings } from './ui/renderers.js';
 import { findCurrentWeek, icon } from './ui/components.js';
+import { handleStravaCallback, stravaConnect as _stravaConnect, saveStravaCredentials, disconnectStrava, syncActivitiesToPlan } from './strava.js';
 
 const $app = document.getElementById('app');
 const $nav = document.getElementById('bottom-nav');
@@ -403,9 +404,51 @@ window.resetPlan = function() {
   }
 };
 
+// ===== STRAVA =====
+window.stravaConnect = function() {
+  const clientId = document.getElementById('strava-client-id')?.value.trim();
+  const clientSecret = document.getElementById('strava-client-secret')?.value.trim();
+  if (clientId && clientSecret) saveStravaCredentials(clientId, clientSecret);
+  _stravaConnect();
+};
+
+window.stravaDisconnect = function() {
+  if (confirm('Disconnect Strava? Your completed sessions will remain.')) {
+    disconnectStrava();
+    render();
+  }
+};
+
+window.stravaSync = async function() {
+  const statusEl = document.getElementById('strava-sync-status');
+  if (statusEl) statusEl.textContent = 'Syncing...';
+  try {
+    const newMatches = await syncActivitiesToPlan(store.plan, store.completions, store.toggleCompletion.bind(store));
+    render();
+    const el = document.getElementById('strava-sync-status');
+    if (el) el.textContent = newMatches > 0 ? `${newMatches} session${newMatches > 1 ? 's' : ''} marked complete.` : 'All up to date.';
+  } catch(e) {
+    const el = document.getElementById('strava-sync-status');
+    if (el) el.textContent = `Sync failed: ${e.message}`;
+  }
+};
+
 // ===== INIT =====
 async function init() {
   store.init();
+
+  // Handle Strava OAuth redirect
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('code') && urlParams.get('scope')?.includes('activity')) {
+    try {
+      await handleStravaCallback(urlParams.get('code'));
+      window.history.replaceState({}, '', window.location.pathname);
+      store.currentView = 'settings';
+    } catch(e) {
+      console.error('Strava auth failed:', e);
+    }
+  }
+
   await Promise.all([loadData(), loadRaces()]);
   render();
 }
