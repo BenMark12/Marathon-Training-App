@@ -1,12 +1,13 @@
-import { BlobNotFoundError, del, head, list, put } from "@vercel/blob";
+import { BlobNotFoundError, del, get, list, put } from "@vercel/blob";
 import type { ZodType } from "zod";
 
 /**
  * Low-level typed JSON wrappers over @vercel/blob.
  *
- * Keys use stable pathnames (addRandomSuffix: false, allowOverwrite: true) so
- * the pathname *is* the lookup key. Blob has no native If-Match; for the
- * single-user-per-account shape of this product we accept last-write-wins.
+ * Uses a private store — blobs require the R/W token to read. Pathnames are
+ * stable (addRandomSuffix: false, allowOverwrite: true) so the pathname *is*
+ * the lookup key. Blob has no native If-Match; for the single-user-per-account
+ * shape of this product we accept last-write-wins.
  */
 
 const JSON_CONTENT_TYPE = "application/json";
@@ -29,23 +30,16 @@ export async function getJson<T>(
 ): Promise<T | null> {
   assertTokenPresent();
 
-  let blob;
+  let result;
   try {
-    blob = await head(pathname);
+    result = await get(pathname, { access: "private" });
   } catch (err) {
     if (err instanceof BlobNotFoundError) return null;
     throw err;
   }
+  if (!result || !result.stream) return null;
 
-  const res = await fetch(blob.url, { cache: "no-store" });
-  if (!res.ok) {
-    if (res.status === 404) return null;
-    throw new Error(
-      `Blob fetch failed for ${pathname}: ${res.status} ${res.statusText}`,
-    );
-  }
-
-  const raw: unknown = await res.json();
+  const raw: unknown = await new Response(result.stream).json();
   const parsed = schema.safeParse(raw);
   if (!parsed.success) {
     throw new Error(
@@ -59,7 +53,7 @@ export async function getJson<T>(
 export async function putJson<T>(pathname: string, value: T): Promise<void> {
   assertTokenPresent();
   await put(pathname, JSON.stringify(value), {
-    access: "public",
+    access: "private",
     contentType: JSON_CONTENT_TYPE,
     addRandomSuffix: false,
     allowOverwrite: true,

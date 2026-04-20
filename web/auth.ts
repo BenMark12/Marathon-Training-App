@@ -16,6 +16,7 @@ const strava = {
   userinfo: "https://www.strava.com/api/v3/athlete",
   clientId: process.env.STRAVA_CLIENT_ID,
   clientSecret: process.env.STRAVA_CLIENT_SECRET,
+  client: { token_endpoint_auth_method: "client_secret_post" },
   checks: ["state"],
   profile(profile: {
     id: number;
