@@ -18,7 +18,7 @@ export default function NewPlanPage() {
       <header className={styles.header}>
         <div className={styles.headerText}>
           <h1>New plan</h1>
-          <p>Tell Flow about your race and Flow builds the block structure.</p>
+          <p>Tell Watto about your race and Watto builds the block structure.</p>
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

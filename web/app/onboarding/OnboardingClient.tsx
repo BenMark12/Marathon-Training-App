@@ -43,7 +43,7 @@ const STEPS = [
 type StepId = (typeof STEPS)[number];
 const PROGRESS_TOTAL = 9;
 
-const STORAGE_KEY = "flow.onboarding.v1";
+const STORAGE_KEY = "watto.onboarding.v1";
 
 export function OnboardingClient({ minRaceDate }: { minRaceDate: string }) {
   const router = useRouter();
@@ -266,7 +266,7 @@ export function OnboardingClient({ minRaceDate }: { minRaceDate: string }) {
 
       <header className={styles.topBar}>
         <div className={styles.mark}>
-          Flow<span>.</span>
+          Watto<span>.</span>
         </div>
         {showProgress ? (
           <div className={styles.progress} role="progressbar" aria-valuenow={progressIdx + 1} aria-valuemin={1} aria-valuemax={PROGRESS_TOTAL}>

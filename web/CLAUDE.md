@@ -1,4 +1,4 @@
-# Flow — web app (Next.js production build)
+# Watto — web app (Next.js production build)
 
 This directory is the production Next.js app. The legacy vanilla-JS reference implementation that previously lived at the repo root has been deleted — the engine is fully ported to TypeScript under `lib/engine/`. See the `legacy-reference-snapshot` git tag if you ever need the original sources.
 

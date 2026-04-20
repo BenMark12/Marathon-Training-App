@@ -67,7 +67,7 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 export function StepWelcome({ onNext }: { onNext: () => void }) {
   return (
     <div className={`${styles.col} ${styles.welcome}`}>
-      <Eyebrow>Welcome to Flow</Eyebrow>
+      <Eyebrow>Welcome to Watto</Eyebrow>
       <h1 className={styles.display}>
         <span className={styles.displayLine}>Ready to run</span>
         <span className={styles.bigNumber}>

@@ -1,4 +1,4 @@
-# Flow — web app
+# Watto — web app
 
 The production Next.js app for the Marathon Training Plan generator. See [`CLAUDE.md`](./CLAUDE.md) for the authoritative guide to the stack, layout, and do-not-break contracts; see the repo root [`README.md`](../README.md) for project context and the engine's workbook provenance.
 

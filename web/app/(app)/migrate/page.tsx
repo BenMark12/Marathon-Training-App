@@ -100,7 +100,7 @@ export default function MigratePage() {
       <header className={styles.header}>
         <h1>Migrate plans</h1>
         <p>
-          Flow found {rows.length} plan{rows.length === 1 ? "" : "s"} in this
+          Watto found {rows.length} plan{rows.length === 1 ? "" : "s"} in this
           browser. Import them into your account to keep them in sync across
           devices. Legacy storage is cleared once all imports succeed.
         </p>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { DeletePlanButton } from "@/components/plan/DeletePlanButton";
 import { MigrationBanner } from "@/components/shell/MigrationBanner";
 import { listPlans } from "@/lib/storage/plans";
 import styles from "./page.module.scss";
@@ -70,7 +71,7 @@ export default async function DashboardPage() {
           <div className={styles.sectionTitle}>All plans</div>
           <ul className={styles.planList}>
             {sorted.map((p) => (
-              <li key={p.planId}>
+              <li key={p.planId} className={styles.planRow}>
                 <Link href={`/plans/${p.planId}`} className={styles.planCard}>
                   <div>
                     <p className={styles.cardTitle}>

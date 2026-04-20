@@ -54,6 +54,14 @@
   }
 }
 
+.tabsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
 .sectionTitle {
   font-size: var(--fs-xs);
   text-transform: uppercase;

@@ -4,8 +4,8 @@ import "./globals.scss";
 
 export const metadata: Metadata = {
   title: {
-    default: "Flow — Marathon training plans",
-    template: "%s | Flow",
+    default: "Watto — Marathon training plans",
+    template: "%s | Watto",
   },
   description:
     "Adaptive marathon training plans tuned to your race date, pace, and mileage.",
