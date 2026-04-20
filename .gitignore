@@ -67,3 +67,9 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# macOS metadata
+.DS_Store
+
+# Local-only config (Claude Code per-user settings, .env.local, etc.)
+*.local*
