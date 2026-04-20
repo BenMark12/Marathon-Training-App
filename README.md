@@ -2,7 +2,9 @@
 
 A browser-based marathon training plan generator that reproduces the behaviour of the Excel/VBA "Training Block Template V9" tool.
 
-> **Active migration:** a Next.js + Vercel Blob port is being scaffolded in [`/web`](./web) — see [`PRODUCTIONISATION_PLAN.md`](./PRODUCTIONISATION_PLAN.md). The vanilla-JS app below keeps working until Phase 4 replaces the UI.
+> **Migration complete:** the production app is now the Next.js + Auth.js + Vercel Blob app in [`/web`](./web). It covers multi-user accounts, server-side Strava sync, and an intercepting-route day view. Open `/web/README.md` for how to run it, and `PRODUCTIONISATION_PLAN.md` for the migration history.
+>
+> The vanilla-JS app documented below remains in the repo as the reference implementation for the engine and the UI behaviour it was ported from. Firebase has been decommissioned; the legacy app still runs via `open index.html` but saves only to localStorage and has no Strava sync (use `/web` for that). Users with legacy localStorage data can import it at `/migrate` in the new app.
 
 ## Quick Start
 
@@ -29,7 +31,7 @@ python3 -m http.server 8080
 ├── src/
 │   ├── app.js                  # Main bootstrap, routing, event handlers
 │   ├── store.js                # State management + multi-plan localStorage persistence
-│   ├── strava.js               # Strava OAuth + activity sync
+│   ├── strava.js               # Disabled stub (Strava sync lives in /web)
 │   └── ui/
 │       ├── components.js       # Reusable UI helpers (badges, icons, formatters)
 │       └── renderers.js        # Screen renderers (create, dashboard, weekly, day, settings)

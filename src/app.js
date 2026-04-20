@@ -1,14 +1,18 @@
 /**
  * app.js — Main application bootstrap (Forclaz v2)
- * Wizard navigation, race loading, email retrieval, routing
+ * Wizard navigation, race loading, routing.
+ *
+ * Note: this legacy vanilla-JS app has been superseded by the Next.js app in
+ * /web. Firebase has been decommissioned; Strava sync here is disabled and
+ * data lives only in localStorage. The /web app has full server-side
+ * Strava + Vercel Blob storage. See PRODUCTIONISATION_PLAN.md.
  */
 
 import store from './store.js';
 import { generateTrainingPlan } from '../engine/planGenerator.js';
 import { renderCreateScreen, renderDashboard, renderWeeklyView, renderDayDetail, renderSettings, renderLogin } from './ui/renderers.js';
 import { findCurrentWeek, icon } from './ui/components.js';
-import { handleStravaCallback, stravaConnect as _stravaConnect, disconnectStrava, syncActivitiesToPlan, isStravaConnected, getStravaAthlete } from './strava.js';
-import { saveUserProfile, savePlanToFirestore, saveCompletionsToFirestore, loadPlansFromFirestore, deletePlanFromFirestore } from './db.js';
+import { stravaConnect as _stravaConnect, disconnectStrava, syncActivitiesToPlan, isStravaConnected, getStravaAthlete } from './strava.js';
 
 const $app = document.getElementById('app');
 const $nav = document.getElementById('bottom-nav');
@@ -142,7 +146,6 @@ function syncDraftFromDOM() {
 
 window.wizardNext = function() {
   syncDraftFromDOM();
-  // Validate current step
   const d = store.draft;
   const errEl = document.getElementById('generate-error');
   if (errEl) errEl.style.display = 'none';
@@ -188,7 +191,6 @@ window.onRaceSelect = function(encodedVal) {
       const dateEl = document.getElementById('inp-raceDate');
       if (dateEl) dateEl.value = race.date;
     } else {
-      // TBC — show modal
       showTBCModal();
     }
   } catch (e) {
@@ -271,30 +273,22 @@ window.generatePlan = async function() {
     if (!d.raceDate) throw new Error('Please select a race date');
     if (d.targetMileage < d.currentMileage) throw new Error('Target mileage must be >= current');
 
-    // Map draft → engine input
-    // Convert target time to pace if provided
     let targetPace = d.currentPace;
     if (d.targetTime) {
-      // Use target time as-is for pace if it looks like a pace (under 10 mins)
-      // Otherwise treat as finish time and derive pace
       const parts = d.targetTime.split(':').map(Number);
       if (parts.length >= 2) {
         const totalSecs = (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
-        // Derive per-km pace from finish time
         let distKm = 42.195;
         if (d.raceDistance === '1/2 Marathon') distKm = 21.0975;
         else if (d.raceDistance === '10km') distKm = 10;
         else if (d.raceDistance === '5km') distKm = 5;
         const pacePerKmSecs = totalSecs / distKm;
-        const paceMins = Math.floor(pacePerKmSecs / 60);
-        // Round to nearest 10-min marathon bracket
         const marathonSecs = pacePerKmSecs * 42.195;
         const marathonHrs = marathonSecs / 3600;
-        const roundedMins = Math.round(marathonHrs * 6) * 10; // nearest 10 min
+        const roundedMins = Math.round(marathonHrs * 6) * 10;
         const h = Math.floor(roundedMins / 60);
         const m = roundedMins % 60;
-        targetPace = `0${h}:${String(m).padStart(2,'0')}:00`;
-        // Clamp to valid range
+        targetPace = `0${h}:${String(m).padStart(2, '0')}:00`;
         const validPaces = ['02:30:00','02:40:00','02:50:00','03:00:00','03:10:00','03:20:00',
           '03:30:00','03:40:00','03:50:00','04:00:00','04:10:00','04:20:00','04:30:00'];
         if (!validPaces.includes(targetPace)) {
@@ -318,11 +312,6 @@ window.generatePlan = async function() {
 
     const plan = generateTrainingPlan(input, dataStore);
     store.savePlan(plan, d.email, d.raceName);
-
-    const athlete = getStravaAthlete();
-    if (athlete) {
-      await savePlanToFirestore(athlete.id, store.planId, plan, d.email, d.raceName);
-    }
 
     store.currentView = 'dashboard';
     store.resetDraft();
@@ -374,13 +363,9 @@ window.openDay = function(dayIdx) {
   window.scrollTo(0, 0);
 };
 
-window.toggleComplete = async function(dayIdx) {
+window.toggleComplete = function(dayIdx) {
   store.toggleCompletion(dayIdx);
   render();
-  const athlete = getStravaAthlete();
-  if (athlete && store.planId) {
-    await saveCompletionsToFirestore(athlete.id, store.planId, store.completions).catch(() => {});
-  }
 };
 
 // ===== SETTINGS ACTIONS =====
@@ -407,21 +392,16 @@ window.importPlan = function(event) {
   reader.readAsText(file);
 };
 
-window.resetPlan = async function() {
+window.resetPlan = function() {
   if (confirm('Are you sure? This will delete your current plan and completion data.')) {
-    const athlete = getStravaAthlete();
-    const planId = store.planId;
     store.clearPlan();
     store.resetDraft();
     store.currentView = 'create';
-    if (athlete && planId) {
-      await deletePlanFromFirestore(athlete.id, planId).catch(() => {});
-    }
     render();
   }
 };
 
-// ===== STRAVA =====
+// ===== STRAVA (disabled; use the /web app) =====
 window.stravaConnect = _stravaConnect;
 
 window.stravaDisconnect = function() {
@@ -436,66 +416,29 @@ window.stravaDisconnect = function() {
 
 window.stravaSync = async function() {
   const statusEl = document.getElementById('strava-sync-status');
-  if (statusEl) statusEl.textContent = 'Syncing...';
-  try {
-    const athlete = getStravaAthlete();
-    const newMatches = await syncActivitiesToPlan(store.plan, store.completions, async (idx) => {
-      store.toggleCompletion(idx);
-      if (athlete) await saveCompletionsToFirestore(athlete.id, store.planId, store.completions);
-    });
-    render();
-    const el = document.getElementById('strava-sync-status');
-    if (el) el.textContent = newMatches > 0 ? `${newMatches} session${newMatches > 1 ? 's' : ''} marked complete.` : 'All up to date.';
-  } catch(e) {
-    const el = document.getElementById('strava-sync-status');
-    if (el) el.textContent = `Sync failed: ${e.message}`;
+  if (statusEl) {
+    statusEl.textContent =
+      'Strava sync moved to the new Flow web app (/web). Use the new app to sync.';
   }
+  // Kept for API compatibility; the stub returns 0.
+  await syncActivitiesToPlan(store.plan, store.completions, () => {});
+  if (!getStravaAthlete()) return;
+  render();
 };
 
 // ===== INIT =====
 async function init() {
   store.init();
 
-  // Handle Strava OAuth redirect
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has('code') && urlParams.get('scope')?.includes('activity')) {
-    try {
-      const data = await handleStravaCallback(urlParams.get('code'));
-      window.history.replaceState({}, '', window.location.pathname);
-      await saveUserProfile(data.athlete);
-    } catch(e) {
-      console.error('Strava auth failed:', e);
-    }
-  }
-
-  // If not connected, show login screen
   if (!isStravaConnected()) {
-    store.currentView = 'login';
+    store.currentView = store.plan ? 'dashboard' : 'login';
     await Promise.all([loadData(), loadRaces()]);
     render();
     return;
   }
 
-  // Connected — load plans from Firestore
   await Promise.all([loadData(), loadRaces()]);
-  try {
-    const athlete = getStravaAthlete();
-    const firestorePlans = await loadPlansFromFirestore(athlete.id);
-    if (firestorePlans.length > 0) {
-      const latest = firestorePlans.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-      store.plan = latest.plan;
-      store.planId = latest.planId;
-      store.completions = latest.completions || {};
-      store.currentView = 'dashboard';
-    } else {
-      store.currentView = 'create';
-    }
-  } catch(e) {
-    console.warn('Firestore load failed, falling back to localStorage:', e);
-    // store.init() already loaded from localStorage above
-    if (!store.plan) store.currentView = 'create';
-  }
-
+  if (!store.plan) store.currentView = 'create';
   render();
 }
 
