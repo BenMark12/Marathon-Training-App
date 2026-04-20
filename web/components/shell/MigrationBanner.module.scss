@@ -1,0 +1,23 @@
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--c-warning);
+  border-radius: var(--r-md);
+  background: var(--c-warning-bg);
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+
+  p {
+    margin: 0;
+  }
+
+  a {
+    color: var(--c-accent);
+    font-weight: var(--fw-semibold);
+    text-decoration: underline;
+    white-space: nowrap;
+  }
+}

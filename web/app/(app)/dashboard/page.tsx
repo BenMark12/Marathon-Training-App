@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { MigrationBanner } from "@/components/shell/MigrationBanner";
 import { requireUserId } from "@/lib/auth/session";
 import { listPlans } from "@/lib/storage/plans";
 import styles from "./page.module.scss";
@@ -37,6 +38,8 @@ export default async function DashboardPage() {
           {plans.length === 1 ? "" : "s"}
         </span>
       </header>
+
+      <MigrationBanner />
 
       {upcoming ? (
         <dl className={styles.countdown}>

@@ -1,0 +1,128 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-3);
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin: 0;
+  }
+
+  p {
+    color: var(--c-text-muted);
+    font-size: var(--fs-sm);
+  }
+}
+
+.panel {
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  background: var(--c-bg-card);
+  padding: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  box-shadow: var(--shadow-sm);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--sp-3);
+  align-items: center;
+  padding: var(--sp-3);
+  background: var(--c-bg-surface);
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+}
+
+.state {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  &.pending {
+    color: var(--c-text-dim);
+  }
+  &.ok {
+    color: var(--c-success);
+  }
+  &.fail {
+    color: var(--c-danger);
+  }
+}
+
+.actions {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--c-accent);
+  color: #fff;
+  font-weight: var(--fw-semibold);
+  box-shadow: 0 2px 8px rgba(90, 122, 58, 0.25);
+  transition: background var(--tr-fast);
+
+  &:hover:not(:disabled) {
+    background: var(--c-accent-hover);
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--sp-3) var(--sp-5);
+  border-radius: var(--r-md);
+  border: 1px solid var(--c-border);
+  color: var(--c-text);
+  font-weight: var(--fw-semibold);
+
+  &:hover {
+    background: var(--c-bg-surface);
+  }
+}
+
+.empty {
+  padding: var(--sp-8) var(--sp-4);
+  border: 1px dashed var(--c-border);
+  border-radius: var(--r-lg);
+  text-align: center;
+  color: var(--c-text-muted);
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--fs-lg);
+    color: var(--c-text);
+    margin: 0 0 var(--sp-2);
+  }
+}
