@@ -12,6 +12,16 @@ pnpm dev                     # http://localhost:3000
 
 Generate `AUTH_SECRET` with `openssl rand -base64 32`. Strava OAuth callback: `http://localhost:3000/api/auth/callback/strava` (local) or `https://<vercel-domain>/api/auth/callback/strava` (prod).
 
+### Weekly email (Resend)
+
+The Sunday-evening weekly-plan email is driven by Vercel Cron hitting `/api/cron/weekly-email` at `0 18 * * 0` (see `vercel.json`). Set:
+
+- `RESEND_API_KEY` — Resend API key
+- `RESEND_FROM_EMAIL` — verified sender, e.g. `Watto <plans@your-domain.com>`
+- `CRON_SECRET` — any random string; Vercel Cron sends it as `Authorization: Bearer …`
+
+Users opt in and set their email on the account page (Strava doesn't expose an email via OAuth, so we ask for it directly).
+
 ## Scripts
 
 | Command | What it does |

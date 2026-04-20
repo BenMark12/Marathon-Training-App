@@ -71,6 +71,7 @@ e2e/                                   Playwright specs
 - `users/{userId}/plans-index.json` — list/metadata only
 - `users/{userId}/completions/{planId}.json`
 - `users/{userId}/strava.json` — tokens (server-only reads; browser never sees them)
+- `users/{userId}/preferences.json` — email address + weekly-email opt-in
 
 Uses `addRandomSuffix: false` + `allowOverwrite: true` for stable keys. No optimistic concurrency — single-user-per-account means last-write-wins is acceptable.
 
