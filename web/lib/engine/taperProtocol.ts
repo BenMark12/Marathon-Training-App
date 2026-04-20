@@ -1,7 +1,12 @@
 import type { TaperSession } from "./types";
+import { DEFAULT_TUNING, type TuningParams } from "./tuning";
 
-export function isTaperDay(dayIndex: number, maxDayCount: number): boolean {
-  return dayIndex >= maxDayCount - 17;
+export function isTaperDay(
+  dayIndex: number,
+  maxDayCount: number,
+  tuning: TuningParams = DEFAULT_TUNING,
+): boolean {
+  return dayIndex >= maxDayCount - tuning.taperDays;
 }
 
 export function getTaperSession(

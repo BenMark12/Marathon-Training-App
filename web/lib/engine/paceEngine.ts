@@ -6,6 +6,7 @@ import type {
   PaceStyle,
   PaceTables,
 } from "./types";
+import { DEFAULT_TUNING, type TuningParams } from "./tuning";
 
 export function paceStrToSeconds(str: string): number {
   if (!str) return 0;
@@ -59,15 +60,16 @@ export function calculatePaceUplift(
   headerValue: string,
   targetPace: string,
   maxDayCount: number,
+  tuning: TuningParams = DEFAULT_TUNING,
 ): number {
   const headerSecs = paceStrToSeconds(headerValue);
   const targetSecs = paceStrToSeconds(targetPace);
   const diffSecs = headerSecs - targetSecs;
 
-  const increments = Math.round(diffSecs / 600);
+  const increments = Math.round(diffSecs / tuning.paceUpliftSeconds);
 
   if (increments <= 0) return maxDayCount;
-  if (increments >= 13) return Math.floor(maxDayCount / 12);
+  if (increments >= tuning.paceIndexMax) return Math.floor(maxDayCount / 12);
 
   return Math.floor(maxDayCount / increments);
 }

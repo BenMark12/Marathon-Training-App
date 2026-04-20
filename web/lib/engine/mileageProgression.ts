@@ -1,4 +1,5 @@
 import type { Block, WeeklyMileage } from "./types";
+import { DEFAULT_TUNING, type TuningParams } from "./tuning";
 
 export interface GrowthRateParams {
   planBlockCount: number;
@@ -8,7 +9,10 @@ export interface GrowthRateParams {
   targetDistance: number;
 }
 
-export function calculateGrowthRate(params: GrowthRateParams): number {
+export function calculateGrowthRate(
+  params: GrowthRateParams,
+  tuning: TuningParams = DEFAULT_TUNING,
+): number {
   const {
     planBlockCount,
     planBlockLength,
@@ -29,7 +33,7 @@ export function calculateGrowthRate(params: GrowthRateParams): number {
 
   const Mx = targetDistance / (0.9 * 0.9);
   let G = Math.exp((Math.log(Mx) - Math.log(startingDistance)) / increaseWeeks) - 1;
-  if (G > 0.1) G = 0.1;
+  if (G > tuning.weeklyGrowthCap) G = tuning.weeklyGrowthCap;
   return G;
 }
 
@@ -49,18 +53,22 @@ export function progressWeeklyMileageByBlocks(
   startMileage: number,
   userTargetMaxMileage: number,
   blocks: Pick<Block, "blockIndex" | "blockWeeks" | "sessionWeeks" | "deloadWeeks">[],
+  tuning: TuningParams = DEFAULT_TUNING,
 ): WeeklyMileage[] {
   if (!blocks || blocks.length === 0) return [];
 
   const weeklyData: WeeklyMileage[] = [];
   let currentMileage = startMileage;
+  const peakWeeks = tuning.peakWeeksPerBlock;
+  const ceiling = tuning.perWeekGrowthCeiling;
+  const maxRate = tuning.weeklyGrowthCap;
 
   for (let bi = 0; bi < blocks.length; bi++) {
     const block = blocks[bi];
-    const rampWeeks = block.sessionWeeks - 2;
+    const rampWeeks = block.sessionWeeks - peakWeeks;
 
     const achievableMax =
-      rampWeeks > 0 ? currentMileage * Math.pow(1.1, rampWeeks) : currentMileage;
+      rampWeeks > 0 ? currentMileage * Math.pow(ceiling, rampWeeks) : currentMileage;
     const blockMax = Math.min(
       userTargetMaxMileage,
       Math.max(currentMileage, achievableMax),
@@ -69,7 +77,7 @@ export function progressWeeklyMileageByBlocks(
     let r = 0;
     if (rampWeeks > 0 && currentMileage > 0 && blockMax > currentMileage) {
       r = Math.pow(blockMax / currentMileage, 1 / rampWeeks) - 1;
-      r = Math.min(0.1, r);
+      r = Math.min(maxRate, r);
     }
 
     let weekMileage = Math.round(currentMileage);
@@ -77,7 +85,7 @@ export function progressWeeklyMileageByBlocks(
     for (let w = 0; w < rampWeeks; w++) {
       const maxNext = Math.min(
         Math.round(blockMax),
-        Math.floor(weekMileage * 1.1),
+        Math.floor(weekMileage * ceiling),
       );
       weekMileage = Math.min(maxNext, Math.round(weekMileage * (1 + r)));
       weeklyData.push({
@@ -92,7 +100,7 @@ export function progressWeeklyMileageByBlocks(
 
     const roundedPeak = Math.round(blockMax);
 
-    for (let p = 0; p < 2; p++) {
+    for (let p = 0; p < peakWeeks; p++) {
       weeklyData.push({
         weekMileage: roundedPeak,
         isDeload: false,
@@ -103,8 +111,8 @@ export function progressWeeklyMileageByBlocks(
       });
     }
 
-    const deload1 = Math.round(roundedPeak * 0.8);
-    const deload2 = Math.round(roundedPeak * 0.7);
+    const deload1 = Math.round(roundedPeak * tuning.deload1Factor);
+    const deload2 = Math.round(roundedPeak * tuning.deload2Factor);
 
     weeklyData.push({
       weekMileage: deload1,
