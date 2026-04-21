@@ -8,3 +8,8 @@ export const completionsKey = (userId: string, planId: string) =>
   `users/${userId}/completions/${planId}.json`;
 
 export const stravaKey = (userId: string) => `users/${userId}/strava.json`;
+
+export const preferencesKey = (userId: string) =>
+  `users/${userId}/preferences.json`;
+
+export const USERS_PREFIX = "users/";

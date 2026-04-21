@@ -14,12 +14,13 @@ export type SyncResult =
 export async function syncActivitiesAction(planId: string): Promise<SyncResult> {
   const userId = await requireUserId();
 
-  const tokens = await getStravaTokens(userId);
-  if (!tokens) {
-    return { ok: false, error: "Reconnect Strava to sync activities." };
-  }
+  const [tokens, plan, completions] = await Promise.all([
+    getStravaTokens(userId),
+    getPlan(userId, planId),
+    getCompletions(userId, planId),
+  ]);
 
-  const plan = await getPlan(userId, planId);
+  if (!tokens) return { ok: false, error: "Reconnect Strava to sync activities." };
   if (!plan) return { ok: false, error: "Plan not found." };
   if (plan.days.length === 0) return { ok: true, newMatches: 0 };
 
@@ -39,7 +40,6 @@ export async function syncActivitiesAction(planId: string): Promise<SyncResult> 
     runs.map((a) => a.start_date_local.split("T")[0]),
   );
 
-  const completions = await getCompletions(userId, planId);
   const next = { ...completions.completed };
   const now = new Date().toISOString();
   let newMatches = 0;

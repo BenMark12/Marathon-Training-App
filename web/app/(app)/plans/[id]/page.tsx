@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
+import { PlanActionsMenu } from "@/components/plan/PlanActionsMenu";
 import { PlanGrid } from "@/components/plan/PlanGrid";
-import { SyncStravaButton } from "@/components/plan/SyncStravaButton";
+import { PlanTabs } from "@/components/plan/PlanTabs";
 import { requireUserId } from "@/lib/auth/session";
 import { getCompletions } from "@/lib/storage/completions";
 import { getPlan } from "@/lib/storage/plans";
@@ -72,7 +73,17 @@ export default async function PlanPage({ params }: Props) {
         </dl>
       </section>
 
-      {stravaConnected && <SyncStravaButton planId={id} />}
+      <div className={styles.tabsRow}>
+        <PlanTabs planId={id} active="plan" />
+        <PlanActionsMenu
+          planId={id}
+          planLabel={`${planMeta.raceDistance} — ${fmtDate(planMeta.raceDate)}`}
+          weeks={weeks}
+          completions={completions.completed}
+          stravaConnected={stravaConnected}
+          redirectTo="/dashboard"
+        />
+      </div>
 
       <div className={styles.sectionTitle}>Schedule</div>
       <PlanGrid weeks={weeks} planId={id} completions={completions.completed} />

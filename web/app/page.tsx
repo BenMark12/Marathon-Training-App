@@ -12,16 +12,20 @@ export default async function LandingPage() {
 
   return (
     <main className={styles.main}>
+      <figure className={styles.illustration} aria-hidden="true">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/illustrations/undraw_running-wild_jnn2.svg" alt="" />
+      </figure>
       <section className={styles.hero}>
         <div className={styles.mark}>
-          Flow<span>.</span>
+          Watto<span>.</span>
         </div>
         <h1 className={styles.lede}>
           Marathon training plans, shaped around your race.
         </h1>
         <p className={styles.sub}>
           Pick a race date, your current weekly mileage and pace, and your target.
-          Flow builds an adaptive block-periodised plan and keeps it in sync with
+          Watto builds an adaptive block-periodised plan and keeps it in sync with
           your Strava.
         </p>
 

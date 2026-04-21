@@ -1,0 +1,37 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--c-bg-card);
+  border: 1px solid var(--c-border);
+  border-left: 3px solid var(--c-accent);
+
+  &.ontrack {
+    border-left-color: var(--c-success);
+  }
+  &.ahead {
+    border-left-color: var(--c-success);
+  }
+  &.behind {
+    border-left-color: var(--c-warning);
+  }
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.sub {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}

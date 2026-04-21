@@ -91,6 +91,18 @@
   margin: 0;
 }
 
+.planRow {
+  position: relative;
+}
+
+.planRowActions {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+  display: flex;
+  gap: var(--sp-1);
+}
+
 .planCard {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -162,4 +174,10 @@
     margin: 0;
     color: var(--c-text);
   }
+}
+
+.emptyArt {
+  width: min(260px, 60%);
+  height: auto;
+  margin-bottom: var(--sp-2);
 }

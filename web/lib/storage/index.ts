@@ -22,3 +22,4 @@ export {
   getStravaTokens,
   saveStravaTokens,
 } from "./strava";
+export { getPreferences, savePreferences } from "./preferences";

@@ -1,6 +1,5 @@
 import type { Block, BlockInfo } from "./types";
-
-const BLOCK_SIZES = [8, 10, 12] as const;
+import { DEFAULT_TUNING, type TuningParams } from "./tuning";
 
 export const SESSION_WEEKS: Record<number, number> = { 8: 6, 10: 8, 12: 10 };
 export const DELOAD_WEEKS = 2;
@@ -33,36 +32,41 @@ export function isUniform(lengths: number[]): boolean {
   return lengths.length > 0 && lengths.every((l) => l === lengths[0]);
 }
 
-function scoreCandidate(lengths: number[], daysUntilRace: number): number {
+function scoreCandidate(
+  lengths: number[],
+  daysUntilRace: number,
+  tuning: TuningParams,
+): number {
   const totalDays = lengths.reduce((s, l) => s + l * 7, 0);
   const slack = daysUntilRace - totalDays;
+  const { slackTargetMin, slackTargetMax } = tuning;
+  const slackMid = (slackTargetMin + slackTargetMax) / 2;
 
   let score = 0;
 
-  if (slack >= 5 && slack <= 10) {
-    score += 80 - Math.abs(slack - 7.5);
+  if (slack >= slackTargetMin && slack <= slackTargetMax) {
+    score += 80 - Math.abs(slack - slackMid);
   } else {
-    const dist = slack < 5 ? 5 - slack : slack - 10;
+    const dist = slack < slackTargetMin ? slackTargetMin - slack : slack - slackTargetMax;
     score -= dist * 15;
   }
 
-  const countBonus: Record<number, number> = { 1: 15, 2: 30, 3: 50, 4: 25, 5: 10 };
-  score += countBonus[lengths.length] || 0;
+  score += tuning.blockCountBonus[lengths.length] ?? 0;
 
-  if (isPyramidal(lengths)) score += 40;
-  else if (isUniform(lengths)) score += 15;
+  if (isPyramidal(lengths)) score += tuning.pyramidalBonus;
+  else if (isUniform(lengths)) score += tuning.uniformBonus;
 
   score -= lengths.length * 2;
 
   return score;
 }
 
-function generateCandidates(count: number): number[][] {
+function generateCandidates(count: number, sizes: readonly number[]): number[][] {
   if (count === 0) return [[]];
-  const shorter = generateCandidates(count - 1);
+  const shorter = generateCandidates(count - 1, sizes);
   const results: number[][] = [];
   for (const p of shorter) {
-    for (const size of BLOCK_SIZES) {
+    for (const size of sizes) {
       results.push([...p, size]);
     }
   }
@@ -71,22 +75,22 @@ function generateCandidates(count: number): number[][] {
 
 export function optimizeBlocks(
   maxDayCount: number,
-  _lastDate?: Date,
+  tuning: TuningParams = DEFAULT_TUNING,
 ): BlockInfo {
   const daysUntilRace = maxDayCount;
-  const taperStartDayIndex = maxDayCount - 17;
+  const taperStartDayIndex = maxDayCount - tuning.taperDays;
 
   let bestLengths: number[] | null = null;
   let bestScore = -Infinity;
 
   for (let count = 1; count <= 5; count++) {
-    for (const lengths of generateCandidates(count)) {
+    for (const lengths of generateCandidates(count, tuning.blockSizes)) {
       const totalDays = lengths.reduce((s, l) => s + l * 7, 0);
       if (totalDays > daysUntilRace) continue;
       if (totalDays < daysUntilRace - 28) continue;
       if (!isPyramidal(lengths) && !isUniform(lengths)) continue;
 
-      const score = scoreCandidate(lengths, daysUntilRace);
+      const score = scoreCandidate(lengths, daysUntilRace, tuning);
       if (score > bestScore) {
         bestScore = score;
         bestLengths = lengths;
@@ -94,14 +98,14 @@ export function optimizeBlocks(
     }
   }
 
-  if (!bestLengths) bestLengths = [8];
+  if (!bestLengths) bestLengths = [tuning.blockSizes[0] ?? 8];
 
   const blocks: Block[] = [];
   let dayIndex = 0;
   for (let i = 0; i < bestLengths.length; i++) {
     const bw = bestLengths[i];
-    const sw = SESSION_WEEKS[bw] ?? bw - 2;
-    const dw = DELOAD_WEEKS;
+    const sw = tuning.sessionWeeksByBlockSize[bw] ?? bw - 2;
+    const dw = tuning.deloadWeeks;
     blocks.push({
       blockIndex: i,
       blockWeeks: bw,

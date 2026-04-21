@@ -6,7 +6,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className={styles.shell}>
       <header className={styles.header}>
         <Link href="/dashboard" className={styles.logo}>
-          Flow<span>.</span>
+          Watto<span>.</span>
         </Link>
         <p className={styles.strapline}>Marathon training, tuned to you</p>
       </header>

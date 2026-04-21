@@ -1,13 +1,17 @@
 import type { DistanceAllocation } from "./types";
+import { DEFAULT_TUNING, type TuningParams } from "./tuning";
 
 export function calculateDistances(
   totalWeeklyKm: number,
   sessionsCount: number = 3,
+  tuning: TuningParams = DEFAULT_TUNING,
 ): DistanceAllocation {
   const total = Math.max(0, totalWeeklyKm);
 
-  const longRunKm = Math.round(Math.min(38, total * 0.4));
-  const intensityWeeklyKm = Math.round(total * 0.2);
+  const longRunKm = Math.round(
+    Math.min(tuning.longRunCapKm, total * tuning.longRunFraction),
+  );
+  const intensityWeeklyKm = Math.round(total * tuning.intensityFraction);
   const baseWeeklyKm = Math.round(total - longRunKm - intensityWeeklyKm);
 
   const intensityPerSessionMeters = Math.round((intensityWeeklyKm * 1000) / 2);

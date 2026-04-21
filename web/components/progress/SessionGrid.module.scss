@@ -1,0 +1,80 @@
+.grid {
+  display: flex;
+  gap: 6px;
+}
+
+.dayCol {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dayLabel {
+  height: 13px;
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--c-text-dim);
+  display: flex;
+  align-items: center;
+  width: 10px;
+  justify-content: center;
+}
+
+.weeks {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.weekCol {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.cell {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 13px;
+  border-radius: 3px;
+
+  &.today {
+    outline: 2px solid var(--c-text);
+    outline-offset: 1px;
+  }
+}
+
+.legend {
+  display: flex;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--c-text-muted);
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.swatchDone {
+  background: var(--c-accent);
+}
+
+.swatchSkipped {
+  border: 1.5px dashed var(--c-danger);
+}
+
+.swatchUpcoming {
+  border: 1px solid var(--c-accent);
+}

@@ -1,5 +1,3 @@
-# Strava (Phase 5)
+# Strava
 
-Server-only OAuth callback and activity sync. Token exchange lives in the NextAuth config (`web/auth.ts`). Activity sync is implemented here once Phase 2 (storage) and Phase 3 (server actions) land.
-
-See issue #7.
+Server-only token refresh and activity sync. Token exchange lives in the NextAuth config (`web/auth.ts`); refresh + activity fetch live in `client.ts`. Tokens are persisted in Blob via `lib/storage/strava.ts` and never reach the browser.

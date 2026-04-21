@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { DeletePlanButton } from "@/components/plan/DeletePlanButton";
 import { MigrationBanner } from "@/components/shell/MigrationBanner";
-import { requireUserId } from "@/lib/auth/session";
 import { listPlans } from "@/lib/storage/plans";
 import styles from "./page.module.scss";
 
@@ -23,7 +23,8 @@ function fmtDate(iso: string): string {
 
 export default async function DashboardPage() {
   const session = await auth();
-  const userId = await requireUserId();
+  const userId = session?.user?.athleteId;
+  if (!userId) throw new Error("Unauthorized — no signed-in user");
   const plans = await listPlans(userId);
 
   const sorted = [...plans].sort((a, b) => a.raceDate.localeCompare(b.raceDate));
@@ -51,6 +52,12 @@ export default async function DashboardPage() {
         </dl>
       ) : (
         <div className={styles.empty}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/illustrations/undraw_runner-start_585j.svg"
+            alt=""
+            className={styles.emptyArt}
+          />
           <h2>No races on the horizon</h2>
           <p>Start by building a plan from your next race date.</p>
           <Link href="/plans/new" className={styles.cta}>
@@ -64,7 +71,7 @@ export default async function DashboardPage() {
           <div className={styles.sectionTitle}>All plans</div>
           <ul className={styles.planList}>
             {sorted.map((p) => (
-              <li key={p.planId}>
+              <li key={p.planId} className={styles.planRow}>
                 <Link href={`/plans/${p.planId}`} className={styles.planCard}>
                   <div>
                     <p className={styles.cardTitle}>
@@ -88,6 +95,7 @@ export default async function DashboardPage() {
           </Link>
         </>
       )}
+
     </>
   );
 }

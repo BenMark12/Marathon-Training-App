@@ -25,29 +25,36 @@ import type {
   PlanDay,
   PlanWeek,
 } from "./types";
+import { DEFAULT_TUNING, type TuningParams } from "./tuning";
 
 function adjustSessionsCount(
   sessionsPerWeek: number,
   startingDistance: number,
+  tuning: TuningParams,
 ): number {
-  let sc = Math.max(3, sessionsPerWeek);
-  if (startingDistance < 40) sc = 3;
-  if (startingDistance > 90) sc = 5;
-  if ((sc === 3 || sc === 4) && startingDistance > 50) sc = 4;
-  if (sc === 5 && startingDistance < 50) sc = 4;
+  let sc = Math.max(tuning.sessionsMin, sessionsPerWeek);
+  if (startingDistance < tuning.sessionsLowMileageThreshold) sc = tuning.sessionsMin;
+  if (startingDistance > tuning.sessionsHighMileageThreshold) sc = tuning.sessionsMax;
+  if ((sc === 3 || sc === 4) && startingDistance > tuning.sessionsBumpMileageThreshold) sc = 4;
+  if (sc === tuning.sessionsMax && startingDistance < tuning.sessionsBumpMileageThreshold) sc = 4;
   return sc;
 }
 
-function clampSessionCount(sc: number, totalWeeklyMileage: number): number {
-  if (totalWeeklyMileage > 90) return 5;
-  if (sc >= 5 && totalWeeklyMileage < 60) return 4;
-  if ((sc === 3 || sc === 4) && totalWeeklyMileage > 60) return 4;
-  return Math.min(5, Math.max(3, sc));
+function clampSessionCount(
+  sc: number,
+  totalWeeklyMileage: number,
+  tuning: TuningParams,
+): number {
+  if (totalWeeklyMileage > tuning.sessionsClampHighPeakMileage) return tuning.sessionsMax;
+  if (sc >= tuning.sessionsMax && totalWeeklyMileage < tuning.sessionsClampDownMileage) return 4;
+  if ((sc === 3 || sc === 4) && totalWeeklyMileage > tuning.sessionsClampUpMileage) return 4;
+  return Math.min(tuning.sessionsMax, Math.max(tuning.sessionsMin, sc));
 }
 
 export function generateTrainingPlan(
   input: GeneratePlanInput,
   dataStore: DataStore,
+  tuning: TuningParams = DEFAULT_TUNING,
 ): GeneratedPlan {
   const {
     raceDate,
@@ -66,12 +73,13 @@ export function generateTrainingPlan(
   const scaffold = createDateScaffold(today, new Date(raceDate));
   const maxDayCount = scaffold.length;
 
-  if (maxDayCount < 56) {
-    throw new Error("Race date too close. Need at least 8 weeks.");
+  if (maxDayCount < tuning.minTrainingDays) {
+    throw new Error(
+      `Race date too close. Need at least ${Math.ceil(tuning.minTrainingDays / 7)} weeks.`,
+    );
   }
 
-  const lastDate = scaffold[scaffold.length - 1].date;
-  const blockInfo = optimizeBlocks(maxDayCount, lastDate);
+  const blockInfo = optimizeBlocks(maxDayCount, tuning);
   const { blocks, planBlockCount, taperStartDayIndex, planBlockLength } =
     blockInfo;
 
@@ -82,6 +90,7 @@ export function generateTrainingPlan(
     startingDistance,
     targetTotalDistance,
     blocks,
+    tuning,
   );
 
   const { paceIndex: startPaceIndex, headerValue } = findPaceIndex(
@@ -93,6 +102,7 @@ export function generateTrainingPlan(
     headerValue,
     targetPace,
     maxDayCount,
+    tuning,
   );
 
   let currentPaceIndex = startPaceIndex;
@@ -117,7 +127,7 @@ export function generateTrainingPlan(
   let globalDayIndex = 0;
   let globalWeekIndex = 0;
   let paceDay = 0;
-  let sessionsCount = adjustSessionsCount(sessionsPerWeek, startingDistance);
+  let sessionsCount = adjustSessionsCount(sessionsPerWeek, startingDistance, tuning);
 
   let totalWeeklyMileage = startingDistance;
 
@@ -137,7 +147,7 @@ export function generateTrainingPlan(
       paceDay = 0;
     }
 
-    if (isTaperDay(globalDayIndex + 1, maxDayCount)) {
+    if (isTaperDay(globalDayIndex + 1, maxDayCount, tuning)) {
       const prevFocus =
         globalDayIndex > 0 && days[globalDayIndex - 1]
           ? days[globalDayIndex - 1].focusArea
@@ -199,7 +209,7 @@ export function generateTrainingPlan(
       }
     }
 
-    const distances = calculateDistances(weekMileage, sessionsCount);
+    const distances = calculateDistances(weekMileage, sessionsCount, tuning);
     const assignment = getDayAssignment(dayData.dayOfWeek, {
       sessionsCount,
       blockCount: blockCount1,
@@ -320,7 +330,7 @@ export function generateTrainingPlan(
       const wData = weeklyMileageData[globalWeekIndex];
       totalWeeklyMileage = wData ? wData.weekMileage : startingDistance;
 
-      sessionsCount = clampSessionCount(sessionsCount, totalWeeklyMileage);
+      sessionsCount = clampSessionCount(sessionsCount, totalWeeklyMileage, tuning);
 
       for (let d = 0; d < 7 && globalDayIndex < maxDayCount; d++) {
         processDay(blockCount, weekInBlock, block.blockWeeks, totalWeeklyMileage);
@@ -334,7 +344,7 @@ export function generateTrainingPlan(
       const wData = weeklyMileageData[globalWeekIndex];
       totalWeeklyMileage = wData ? wData.weekMileage : startingDistance;
 
-      sessionsCount = clampSessionCount(sessionsCount, totalWeeklyMileage);
+      sessionsCount = clampSessionCount(sessionsCount, totalWeeklyMileage, tuning);
 
       for (let d = 0; d < 7 && globalDayIndex < maxDayCount; d++) {
         processDay(blockCount, weekInBlock, block.blockWeeks, totalWeeklyMileage);

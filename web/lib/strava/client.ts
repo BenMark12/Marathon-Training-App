@@ -20,6 +20,7 @@ const ActivitySchema = z.object({
   type: z.string(),
   start_date_local: z.string(),
   distance: z.number(),
+  moving_time: z.number().optional(),
   name: z.string().optional(),
 });
 const ActivitiesSchema = z.array(ActivitySchema);

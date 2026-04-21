@@ -103,3 +103,15 @@ export const StravaTokensSchema = z.object({
   updatedAt: z.string(),
 });
 export type StravaTokens = z.infer<typeof StravaTokensSchema>;
+
+/**
+ * User preferences — currently just the email address and whether the user
+ * wants the Sunday-evening weekly-plan email. Stored server-side only; the
+ * account page form updates it via a server action.
+ */
+export const UserPreferencesSchema = z.object({
+  email: z.string().email().optional(),
+  weeklyEmailOptIn: z.boolean().default(false),
+  updatedAt: z.string(),
+});
+export type UserPreferences = z.infer<typeof UserPreferencesSchema>;

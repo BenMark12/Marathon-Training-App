@@ -1,0 +1,157 @@
+.wrap {
+  width: 100%;
+}
+
+.plot {
+  position: relative;
+  margin-top: 8px;
+}
+
+.gridline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed var(--c-border);
+  opacity: 0.6;
+
+  &.axis {
+    border-top-style: solid;
+  }
+}
+
+.axisLabel {
+  position: absolute;
+  right: 0;
+  top: -7px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--c-text-dim);
+  background: var(--c-bg-card);
+  padding: 0 4px;
+}
+
+.bars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 24px;
+  gap: 2px;
+}
+
+.col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.planned {
+  position: absolute;
+  bottom: 24px;
+  width: calc(100% - 4px);
+  border: 1px solid var(--c-border);
+  border-radius: 4px 4px 0 0;
+  box-sizing: border-box;
+
+  &.peak {
+    border-color: var(--c-accent);
+  }
+}
+
+.plannedFuture {
+  background: var(--c-bg-surface);
+}
+
+.plannedHatched {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--c-bg-surface) 0 4px,
+    transparent 4px 8px
+  );
+}
+
+.actual {
+  position: absolute;
+  bottom: 24px;
+  width: calc(100% - 4px);
+  background: var(--c-accent);
+  border-radius: 4px 4px 0 0;
+
+  &.taper {
+    background: var(--c-taper);
+  }
+  &.current {
+    opacity: 0.75;
+  }
+}
+
+.weekLabel {
+  position: absolute;
+  bottom: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--c-text-dim);
+  font-weight: 400;
+}
+
+.weekLabelCurrent {
+  color: var(--c-accent);
+  font-weight: 700;
+}
+
+.marker {
+  position: absolute;
+  top: -6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  box-shadow: 0 0 0 3px var(--c-accent-glow);
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--c-text-muted);
+  font-family: var(--font-body);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  display: inline-block;
+}
+
+.swatchActual {
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--c-accent);
+}
+
+.swatchHatched {
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--c-bg-surface) 0 3px,
+    transparent 3px 6px
+  );
+  border: 1px solid var(--c-border);
+}
+
+.swatchDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-accent);
+}
